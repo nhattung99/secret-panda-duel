@@ -1,0 +1,24 @@
+{
+  "name": "secret-panda-duel",
+  "private": true,
+  "workspaces": [
+    "apps/web",
+    "packages/contracts"
+  ],
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "npm run dev -w @panda/web",
+    "build": "npm run build -w @panda/web",
+    "typecheck": "npm run typecheck --workspaces",
+    "test": "npm run test -w @panda/contracts",
+    "test:web": "playwright test",
+    "compile": "npm run compile -w @panda/contracts",
+    "deploy:sepolia": "npm run deploy:sepolia -w @panda/contracts",
+    "test:sepolia": "npm run test:sepolia -w @panda/contracts --"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.65.0"
+  }
+}

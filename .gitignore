@@ -1,0 +1,17 @@
+node_modules/
+.npm-cache/
+.next/
+next-env.d.ts
+*.tsbuildinfo
+artifacts/
+cache/
+fhevmTemp/
+fhevm-debug/
+coverage/
+.env
+.env.*
+!.env.example
+*.log
+.vercel/
+playwright-report/
+test-results/
