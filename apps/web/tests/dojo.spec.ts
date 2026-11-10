@@ -19,6 +19,9 @@ test("renders the landing page on desktop and mobile", async ({ page }) => {
   if (process.env.CAPTURE_DOJO) await page.screenshot({ path: "docs/screenshots/dojo-mobile.png", fullPage: true, animations: "disabled" });
   await page.getByRole("link", { name: "Enter the dojo" }).click();
   await expect(page.getByRole("heading", { name: "Take your seat." })).toBeVisible();
+  await page.getByRole("button", { name: "Connect MetaMask" }).click();
+  await expect(page.getByRole("banner").getByRole("alert")).toContainText("MetaMask isn’t available in this browser.");
+  await expect(page.getByRole("button", { name: "Copy game link" })).toBeVisible();
 });
 
 for (const version of [1, 2]) test(`restores wallet and confirmed move state after reloading a V${version} invitation`, async ({ page }) => {

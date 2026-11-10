@@ -44,6 +44,8 @@ button:disabled { opacity: .49; cursor: not-allowed; }
 .wallet { position: relative; }
 .wallet-error { position: absolute; right: 0; top: calc(100% + 8px); z-index: 5; background: #291b1e; border: 1px solid var(--rose); padding: 10px; border-radius: 8px; width: min(280px, 70vw); font-size: .82rem; }
 .wallet-error a, .notice a, .ledger a:not(li a), .prose p a { color: var(--yellow); text-decoration: underline; }
+.wallet-error-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 8px; }
+.wallet-error-actions .btn { min-height: 36px; padding: 4px 8px; font-size: .76rem; }
 .btn { display: inline-flex; justify-content: center; align-items: center; gap: .7rem; min-height: 45px; padding: .65rem 1rem; border: 1px solid transparent; border-radius: 10px; font-weight: 800; font-size: .9rem; text-align: center; transition: background .18s ease, border-color .18s ease, transform .18s ease; }
 .btn:not(:disabled):hover { transform: translateY(-2px); }
 .primary { background: var(--yellow); color: #111008; box-shadow: 0 4px 0 #8c6a09; }
