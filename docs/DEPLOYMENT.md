@@ -33,6 +33,8 @@ If the wallet already returned a transaction hash, verify that hash with `node -
 
 ## Frontend and Vercel
 
+Production runs at [secret-panda-duel.vercel.app](https://secret-panda-duel.vercel.app/) and uses the V2 Sepolia contract. The public lobby loads the username and four-digit room forms.
+
 For local use, create `apps/web/.env.local` with the following values.
 
 ```dotenv

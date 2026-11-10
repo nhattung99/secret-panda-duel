@@ -39,7 +39,7 @@ Follow [deployment instructions](docs/DEPLOYMENT.md) to deploy the contract to S
 | --- | --- |
 | Sepolia contract V1 | [`0x7d928e377bd880e7cc5e1befec9a2d583bd561ee`](https://sepolia.etherscan.io/address/0x7d928e377bd880e7cc5e1befec9a2d583bd561ee) |
 | Sepolia contract V2 | [`0x2bd5f625f51fa7c515eed84ccbedc08d328133fe`](https://sepolia.etherscan.io/address/0x2bd5f625f51fa7c515eed84ccbedc08d328133fe) |
-| Live DApp | Pending approved Vercel deployment |
+| Live DApp | [secret-panda-duel.vercel.app](https://secret-panda-duel.vercel.app/) |
 | Demo video | Pending recording after the two-wallet demo |
 
 ## Screenshots
