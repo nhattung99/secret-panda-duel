@@ -37,6 +37,11 @@ export const duelAbi = [
   },
   {
     "inputs": [],
+    "name": "InvalidUsername",
+    "type": "error"
+  },
+  {
+    "inputs": [],
     "name": "MissingInputProof",
     "type": "error"
   },
@@ -58,6 +63,11 @@ export const duelAbi = [
   {
     "inputs": [],
     "name": "RematchExists",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "RoomCodesExhausted",
     "type": "error"
   },
   {
@@ -88,8 +98,32 @@ export const duelAbi = [
   },
   {
     "inputs": [],
+    "name": "WrongRound",
+    "type": "error"
+  },
+  {
+    "inputs": [],
     "name": "ZamaProtocolUnsupported",
     "type": "error"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "roomId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "enum SecretPandaDuel.Result",
+        "name": "result",
+        "type": "uint8"
+      }
+    ],
+    "name": "MatchFinalized",
+    "type": "event"
   },
   {
     "anonymous": false,
@@ -269,6 +303,38 @@ export const duelAbi = [
     "type": "event"
   },
   {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "player",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "username",
+        "type": "string"
+      }
+    ],
+    "name": "UsernameUpdated",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "GAME_VERSION",
+    "outputs": [
+      {
+        "internalType": "uint8",
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "HISTORY_LIMIT",
     "outputs": [
@@ -399,6 +465,119 @@ export const duelAbi = [
     "name": "finalizeRound",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "roomId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getMatchRoom",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "playerA",
+            "type": "address"
+          },
+          {
+            "internalType": "uint64",
+            "name": "createdAt",
+            "type": "uint64"
+          },
+          {
+            "internalType": "enum SecretPandaDuel.Phase",
+            "name": "phase",
+            "type": "uint8"
+          },
+          {
+            "internalType": "enum SecretPandaDuel.Result",
+            "name": "result",
+            "type": "uint8"
+          },
+          {
+            "internalType": "bool",
+            "name": "submittedA",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "submittedB",
+            "type": "bool"
+          },
+          {
+            "internalType": "address",
+            "name": "playerB",
+            "type": "address"
+          },
+          {
+            "internalType": "uint64",
+            "name": "joinDeadline",
+            "type": "uint64"
+          },
+          {
+            "internalType": "address",
+            "name": "invitedOpponent",
+            "type": "address"
+          },
+          {
+            "internalType": "uint64",
+            "name": "moveDeadline",
+            "type": "uint64"
+          },
+          {
+            "internalType": "uint64",
+            "name": "endedAt",
+            "type": "uint64"
+          },
+          {
+            "internalType": "euint8",
+            "name": "encryptedResult",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "uint256",
+            "name": "rematchId",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct SecretPandaDuel.Room",
+        "name": "room",
+        "type": "tuple"
+      },
+      {
+        "components": [
+          {
+            "internalType": "uint8",
+            "name": "played",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint8",
+            "name": "winsA",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint8",
+            "name": "winsB",
+            "type": "uint8"
+          },
+          {
+            "internalType": "enum SecretPandaDuel.Result[3]",
+            "name": "rounds",
+            "type": "uint8[3]"
+          }
+        ],
+        "internalType": "struct SecretPandaDuel.MatchScore",
+        "name": "score",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -581,6 +760,19 @@ export const duelAbi = [
   {
     "inputs": [
       {
+        "internalType": "string",
+        "name": "username",
+        "type": "string"
+      }
+    ],
+    "name": "setUsername",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "roomId",
         "type": "uint256"
@@ -599,6 +791,53 @@ export const duelAbi = [
     "name": "submitMove",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "roomId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint8",
+        "name": "round",
+        "type": "uint8"
+      },
+      {
+        "internalType": "externalEuint8",
+        "name": "encryptedMove",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes",
+        "name": "inputProof",
+        "type": "bytes"
+      }
+    ],
+    "name": "submitRoundMove",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "usernames",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   }
 ] as const;

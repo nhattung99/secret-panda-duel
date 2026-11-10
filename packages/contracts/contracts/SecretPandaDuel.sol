@@ -11,6 +11,10 @@ contract SecretPandaDuel is ZamaEthereumConfig {
     uint64 public constant JOIN_WINDOW = 30 minutes;
     uint64 public constant MOVE_WINDOW = 15 minutes;
     uint256 public constant HISTORY_LIMIT = 20;
+    uint256 private constant ROOM_CODE_COUNT = 9000;
+    uint8 private constant ROUNDS_PER_MATCH = 3;
+    uint8 private constant WINS_PER_MATCH = 2;
+    uint8 public constant GAME_VERSION = 2;
 
     struct Room {
         address playerA;
@@ -34,6 +38,13 @@ contract SecretPandaDuel is ZamaEthereumConfig {
         uint256 draws;
     }
 
+    struct MatchScore {
+        uint8 played;
+        uint8 winsA;
+        uint8 winsB;
+        Result[3] rounds;
+    }
+
     error RoomNotFound();
     error WrongPhase();
     error NotParticipant();
@@ -47,12 +58,17 @@ contract SecretPandaDuel is ZamaEthereumConfig {
     error RematchExists();
     error InvalidResult();
     error PageTooLarge();
+    error RoomCodesExhausted();
+    error WrongRound();
+    error InvalidUsername();
 
     event RoomCreated(uint256 indexed roomId, address indexed playerA, address indexed invitedOpponent);
     event RoomJoined(uint256 indexed roomId, address indexed playerB);
     event MoveSubmitted(uint256 indexed roomId, address indexed player);
     event ResultReady(uint256 indexed roomId, bytes32 resultHandle);
     event RoundFinalized(uint256 indexed roomId, address indexed playerA, address indexed playerB, Result result);
+    event MatchFinalized(uint256 indexed roomId, Result result);
+    event UsernameUpdated(address indexed player, string username);
     event RoomCancelled(uint256 indexed roomId);
     event RoomExpired(uint256 indexed roomId);
     event RematchCreated(uint256 indexed previousRoomId, uint256 indexed roomId);
@@ -63,6 +79,22 @@ contract SecretPandaDuel is ZamaEthereumConfig {
     mapping(bytes32 => bool) private usedInputs;
     mapping(address => Stats) private stats;
     mapping(address => uint256[]) private completedRooms;
+    mapping(uint256 => MatchScore) private matchScores;
+    mapping(uint256 => uint256) private roomCodeSwaps;
+    mapping(address => string) public usernames;
+
+    function setUsername(string calldata username) external {
+        bytes calldata name = bytes(username);
+        if (name.length < 3 || name.length > 20) revert InvalidUsername();
+        for (uint256 i; i < name.length; ++i) {
+            bytes1 c = name[i];
+            bool allowed = (c >= 0x30 && c <= 0x39) || (c >= 0x41 && c <= 0x5A)
+                || (c >= 0x61 && c <= 0x7A) || c == 0x5F;
+            if (!allowed) revert InvalidUsername();
+        }
+        usernames[msg.sender] = username;
+        emit UsernameUpdated(msg.sender, username);
+    }
 
     function createRoom() external returns (uint256) {
         return _createRoom(address(0));
@@ -94,8 +126,17 @@ contract SecretPandaDuel is ZamaEthereumConfig {
     }
 
     function submitMove(uint256 roomId, externalEuint8 encryptedMove, bytes calldata inputProof) external {
+        _submitMove(roomId, 1, encryptedMove, inputProof);
+    }
+
+    function submitRoundMove(uint256 roomId, uint8 round, externalEuint8 encryptedMove, bytes calldata inputProof) external {
+        _submitMove(roomId, round, encryptedMove, inputProof);
+    }
+
+    function _submitMove(uint256 roomId, uint8 round, externalEuint8 encryptedMove, bytes calldata inputProof) private {
         Room storage room = _room(roomId);
         if (room.phase != Phase.WaitingForMoves) revert WrongPhase();
+        if (round != matchScores[roomId].played + 1) revert WrongRound();
         if (block.timestamp >= room.moveDeadline) revert DeadlinePassed();
 
         bool isA = msg.sender == room.playerA;
@@ -137,6 +178,30 @@ contract SecretPandaDuel is ZamaEthereumConfig {
         FHE.checkSignatures(handles, abi.encode(outcome), proof);
 
         Result result = Result(outcome);
+        MatchScore storage score = matchScores[roomId];
+        score.rounds[score.played++] = result;
+        if (result == Result.PlayerAWins) score.winsA++;
+        if (result == Result.PlayerBWins) score.winsB++;
+        emit RoundFinalized(roomId, room.playerA, room.playerB, result);
+
+        if (result == Result.InvalidMove) {
+            _completeMatch(roomId, room, result);
+        } else if (score.winsA == WINS_PER_MATCH) {
+            _completeMatch(roomId, room, Result.PlayerAWins);
+        } else if (score.winsB == WINS_PER_MATCH) {
+            _completeMatch(roomId, room, Result.PlayerBWins);
+        } else if (score.played == ROUNDS_PER_MATCH) {
+            _completeMatch(roomId, room, Result.Draw);
+        } else {
+            room.phase = Phase.WaitingForMoves;
+            room.submittedA = false;
+            room.submittedB = false;
+            room.encryptedResult = euint8.wrap(bytes32(0));
+            room.moveDeadline = uint64(block.timestamp) + MOVE_WINDOW;
+        }
+    }
+
+    function _completeMatch(uint256 roomId, Room storage room, Result result) private {
         room.result = result;
         room.phase = Phase.Completed;
         room.endedAt = uint64(block.timestamp);
@@ -152,7 +217,7 @@ contract SecretPandaDuel is ZamaEthereumConfig {
             stats[room.playerB].wins++;
             stats[room.playerA].losses++;
         }
-        emit RoundFinalized(roomId, room.playerA, room.playerB, result);
+        emit MatchFinalized(roomId, result);
     }
 
     function cancelRoom(uint256 roomId) external {
@@ -184,6 +249,10 @@ contract SecretPandaDuel is ZamaEthereumConfig {
         return _room(roomId);
     }
 
+    function getMatchRoom(uint256 roomId) external view returns (Room memory room, MatchScore memory score) {
+        return (_room(roomId), matchScores[roomId]);
+    }
+
     function getPlayerStats(address player) external view returns (Stats memory) {
         return stats[player];
     }
@@ -201,13 +270,27 @@ contract SecretPandaDuel is ZamaEthereumConfig {
     }
 
     function _createRoom(address opponent) private returns (uint256 roomId) {
-        roomId = ++roomCount;
+        uint256 remaining = ROOM_CODE_COUNT - roomCount;
+        if (remaining == 0) revert RoomCodesExhausted();
+        // Draw from a sparse Fisher–Yates pool so codes are never reused.
+        // Room codes are public identifiers and confer no join permissions.
+        uint256 index = uint256(keccak256(abi.encode(block.prevrandao, address(this), msg.sender, roomCount))) % remaining;
+        uint256 last = remaining - 1;
+        roomId = _codeAt(index);
+        if (index != last) roomCodeSwaps[index] = _codeAt(last);
+        delete roomCodeSwaps[last];
+        ++roomCount;
         Room storage room = rooms[roomId];
         room.playerA = msg.sender;
         room.invitedOpponent = opponent;
         room.createdAt = uint64(block.timestamp);
         room.joinDeadline = room.createdAt + JOIN_WINDOW;
         emit RoomCreated(roomId, msg.sender, opponent);
+    }
+
+    function _codeAt(uint256 index) private view returns (uint256) {
+        uint256 code = roomCodeSwaps[index];
+        return code == 0 ? index + 1000 : code;
     }
 
     function _room(uint256 roomId) private view returns (Room storage room) {

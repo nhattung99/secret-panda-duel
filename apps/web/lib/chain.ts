@@ -1,4 +1,4 @@
-import { createPublicClient, http, isAddress, zeroAddress } from "viem";
+import { BaseError, ContractFunctionRevertedError, ContractFunctionZeroDataError, createPublicClient, http, isAddress, zeroAddress, type Address } from "viem";
 import { sepolia } from "viem/chains";
 import { duelAbi } from "./duel-abi";
 
@@ -20,6 +20,26 @@ export function parseRoomId(raw: string): bigint | undefined {
 export const roomRead = (id: bigint) => ({ ...duel, functionName: "getRoom" as const, args: [id] as const });
 export const getRoom = (id: bigint) => publicClient.readContract(roomRead(id));
 export type Room = Awaited<ReturnType<typeof getRoom>>;
+export const getMatchRoom = (id: bigint) => publicClient.readContract({ ...duel, functionName: "getMatchRoom", args: [id] });
+export type MatchScore = Awaited<ReturnType<typeof getMatchRoom>>[1];
+export const getUsername = (address: Address) => publicClient.readContract({ ...duel, functionName: "usernames", args: [address] });
+
+export async function getGameVersion(): Promise<1 | 2> {
+  try {
+    const version = await publicClient.readContract({ ...duel, functionName: "GAME_VERSION" });
+    if (version === 2) return version;
+    throw new Error("Unsupported duel contract version.");
+  } catch (error) {
+    if (error instanceof BaseError && error.walk(cause =>
+      cause instanceof ContractFunctionZeroDataError ||
+      (cause instanceof ContractFunctionRevertedError && cause.raw === "0x")
+    )) {
+      await publicClient.readContract({ ...duel, functionName: "roomCount" });
+      return 1;
+    }
+    throw error;
+  }
+}
 
 export const phase = { lobby: 0, moves: 1, result: 2, complete: 3, cancelled: 4, expired: 5 } as const;
 export const outcome = { draw: 0, blue: 1, red: 2, void: 3 } as const;

@@ -13,5 +13,6 @@ coverage/
 !.env.example
 *.log
 .vercel/
+.sepolia-wallet-deploy.json
 playwright-report/
 test-results/

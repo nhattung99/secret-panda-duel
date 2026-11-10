@@ -6,11 +6,13 @@ A public first move lets the second player choose its counter. Here, both moves 
 
 ## Play a round
 
+The V2 contract on Sepolia supports four-digit room codes, public wallet usernames, and matches of up to three rounds. The first player to win two rounds wins the match. If neither player has two wins after three rounds, the match is a draw. The frontend also recognizes the original single-round contract.
+
 1. Connect MetaMask on Ethereum Sepolia. Player A creates a room and copies the invitation link.
 2. Player B opens it in a separate browser profile with a different wallet and joins as Panda Red.
 3. Each player selects a move and confirms the encrypted submission. Refresh either tab to restore the room directly from Sepolia.
 4. Once both moves are locked, select **Verify & finalize**. The UI fetches the Zama proof, simulates verification, and asks the wallet to submit the finalization.
-5. Check the verified win, loss, draw, or void result. Open match history or request a rematch.
+5. On V2, repeat for the next round until the scoreboard shows a match result. Set or edit your public username from the Play lobby. Open match history or request a rematch after the match.
 
 ## Local setup
 
@@ -35,7 +37,8 @@ Follow [deployment instructions](docs/DEPLOYMENT.md) to deploy the contract to S
 
 | Evidence | Link |
 | --- | --- |
-| Sepolia contract | Pending approved deployment |
+| Sepolia contract V1 | [`0x7d928e377bd880e7cc5e1befec9a2d583bd561ee`](https://sepolia.etherscan.io/address/0x7d928e377bd880e7cc5e1befec9a2d583bd561ee) |
+| Sepolia contract V2 | [`0x2bd5f625f51fa7c515eed84ccbedc08d328133fe`](https://sepolia.etherscan.io/address/0x2bd5f625f51fa7c515eed84ccbedc08d328133fe) |
 | Live DApp | Pending approved Vercel deployment |
 | Demo video | Pending recording after the two-wallet demo |
 

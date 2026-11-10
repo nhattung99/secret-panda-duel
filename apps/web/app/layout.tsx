@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { Providers } from "./providers";
 import { ConnectWalletButton, NetworkStatus } from "@/components/wallet";
@@ -9,14 +10,29 @@ export const metadata: Metadata = {
   description: "A confidential two-wallet Rock, Paper, Scissors duel powered by Zama.",
 };
 
+function CreatorLink() {
+  return <a className="creator-link" href="https://x.com/nhattung00" target="_blank" rel="noopener noreferrer">
+    <span>Panda Beo</span> <span className="creator-handle">x.com/nhattung00 ↗</span>
+  </a>;
+}
+
+function ZamaCredit() {
+  return <a className="zama-credit" href="https://docs.zama.org/protocol" target="_blank" rel="noopener noreferrer">
+    <span>Powered by</span>
+    <span className="zama-mark"><Image src="/brand/zama.svg" width={76} height={15} alt="Zama" unoptimized /></span>
+  </a>;
+}
+
 function Navbar() {
   return (
     <header className="nav shell">
-      <Link className="brand" href="/"><span className="brand-mark" aria-hidden="true">✦</span> Secret Panda<span className="brand-duel">Duel</span></Link>
+      <Link className="brand" href="/"><span className="brand-mark" aria-hidden="true">🐼</span>
+        <span>Secret Panda <span className="brand-duel">Duel</span></span>
+      </Link>
       <nav aria-label="Main navigation">
         <Link href="/play">Play</Link><Link href="/history">History</Link><Link href="/about">Fairness</Link>
       </nav>
-      <ConnectWalletButton />
+      <div className="nav-actions"><CreatorLink /><ConnectWalletButton /></div>
     </header>
   );
 }
@@ -24,9 +40,9 @@ function Navbar() {
 function Footer() {
   return (
     <footer className="footer shell">
-      <span>SECRET PANDA DUEL <span className="foot-sep">/</span> THE SEALED DOJO</span>
+      <ZamaCredit />
       <NetworkStatus />
-      <a href="https://docs.zama.org/protocol" target="_blank" rel="noreferrer">Powered by Zama ↗</a>
+      <CreatorLink />
     </footer>
   );
 }

@@ -1,21 +1,27 @@
+import Image from "next/image";
 import Link from "next/link";
 import { BattleAnimation } from "@/components/panda";
+import { MoveGallery } from "@/components/move-cards";
 
 export default function Home() {
   return (
     <>
       <section className="hero">
-        <div>
-          <span className="eyebrow">✦ &nbsp; THE SEALED DOJO</span>
-          <h1>Secret<br />Panda <em>Duel.</em></h1>
-          <p className="lead">Rock, paper, scissors in a neon bamboo dojo. Lock in your move under encryption and let the chain settle the duel.</p>
+        <div className="hero-content">
+          <a className="hero-logo" href="https://docs.zama.org/protocol" target="_blank" rel="noopener noreferrer">
+            <Image src="/brand/zama.svg" width={127} height={25} alt="Zama" unoptimized priority />
+          </a>
+          <h1>Secret Panda <em>Duel.</em></h1>
+          <p className="hero-tagline">Confidential Rock · Paper · Scissors</p>
+        </div>
+        <BattleAnimation controls={<><p className="arena-prompt">Choose your move</p><MoveGallery /></>} />
+        <div className="hero-bottom">
           <div className="actions">
             <Link className="btn primary" href="/play">Enter the dojo <span aria-hidden="true">↗</span></Link>
             <Link className="btn ghost" href="/about">How it works</Link>
           </div>
-          <p className="hero-note">TWO WALLETS <span>•</span> ETHEREUM SEPOLIA</p>
+          <p className="hero-note">2 PLAYERS <span>◆</span> ENCRYPTED MOVES <span>◆</span> SEPOLIA</p>
         </div>
-        <BattleAnimation />
       </section>
       <section className="how" aria-labelledby="how-title">
         <div className="section-title"><span className="eyebrow">THE RULES</span><h2 id="how-title">Three steps to a duel</h2></div>

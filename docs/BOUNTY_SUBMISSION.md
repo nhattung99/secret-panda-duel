@@ -18,7 +18,8 @@ Secret Panda Duel brings simultaneous-choice Rock, Paper, Scissors to Sepolia. I
 ## Submission checklist
 
 - [ ] Link the public GitHub repository.
-- [ ] Deploy and verify the Sepolia contract after approval. Record address and deploy transaction.
+- [x] Deploy the Sepolia contract, compare the bytecode, and [record the transaction](DEPLOYMENT.md).
+- [ ] Verify the Solidity source on Etherscan.
 - [ ] Deploy the Next.js frontend after approval. Link the live URL.
 - [ ] Capture a verified two-wallet round and record its transaction links.
 - [ ] Add the live room and verdict screenshots to the README.

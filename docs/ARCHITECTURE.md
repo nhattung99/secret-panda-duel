@@ -21,6 +21,8 @@ sequenceDiagram
 
 The second submission evaluates the circuit regardless of who submits first. Either player or any other address can submit a valid finalization. The UI loads the room directly from Sepolia on navigation or refresh, polls the room every four seconds, and refetches after confirmed writes. A parsed room-creation event gives the creator the correct ID even when other rooms are created concurrently. Match history reads a capped page of room IDs in reverse finalization order and then loads their room records.
 
+On V2, a room can host up to three rounds. Verified round results update the score, reset both submission flags, and start a fresh move deadline until a player reaches two wins or three rounds have been played. A void round ends the match without awarding stats. The scoreboard and room are read together in a single call. Stats and history update once at match completion. Usernames are public wallet-level display labels and may repeat.
+
 - `apps/web/app` contains App Router pages and wallet/query providers.
 - `apps/web/components` contains the dojo UI and browser-only Zama provider.
 - `apps/web/lib` contains chain configuration, the generated ABI, and shared transaction handling.

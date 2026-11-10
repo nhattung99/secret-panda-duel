@@ -15,4 +15,6 @@
 | Gas and storage abuse | The second submission runs a fixed-size encrypted circuit. History reads are capped at 20 entries. Permanent replay guards, room metadata, stats, and history grow with paid writes. |
 | Chain mismatch | The frontend targets Sepolia, gates writes on the connected chain, and checks the wallet again after encryption or simulation. Deployment and the smoke test check RPC chain ID. |
 
+V2 assigns codes from 1000–9999 without reuse to keep existing invitations and history unambiguous. A deployment can create at most 9,000 rooms. The codes are public identifiers, and their assignment uses block data for variety. Anyone can join an open room before it fills. Usernames may repeat, so use the wallet address to distinguish players. A player who stops submitting after losing a round can cause the match to expire, with no match win awarded.
+
 Once both moves are locked and the outcome can be decrypted, a participant who remembers their own move can infer the opponent's move in any valid round. Spectators see addresses, timings, submitted flags, and the outcome. Confidentiality depends on the browser/device and Zama's protocol trust assumptions. Sepolia is a test network. This MVP has had local verification and an internal threat review, with independent audit and live verification pending.

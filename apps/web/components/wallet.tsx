@@ -1,14 +1,15 @@
 "use client";
 
-import { useConnection, useConnect, useConnectors, useDisconnect, useSwitchChain } from "wagmi";
-import { chain, shortAddress } from "@/lib/chain";
+import { useConnect, useConnectors, useDisconnect, useSwitchChain } from "wagmi";
+import { chain, rpcUrl, shortAddress } from "@/lib/chain";
+import { useWalletNetwork } from "@/lib/use-wallet-network";
 
 export function NetworkStatus() {
   return <span className="network"><span className="led" /> Sepolia testnet</span>;
 }
 
 export function ConnectWalletButton() {
-  const { address, chainId } = useConnection();
+  const { connection: { address, connector: activeConnector }, network, onSepolia } = useWalletNetwork();
   const [connector] = useConnectors();
   const connect = useConnect();
   const disconnect = useDisconnect();
@@ -16,13 +17,19 @@ export function ConnectWalletButton() {
   const error = connect.error ?? switchChain.error;
   return (
     <div className="wallet">
-      {address && chainId === chain.id ? (
+      {address && onSepolia ? (
         <button className="btn ghost wallet-button" onClick={() => disconnect.mutate({})} title="Disconnect wallet">
           <span className="led" /> {shortAddress(address)}
         </button>
       ) : address ? (
-        <button className="btn ghost wallet-button" disabled={switchChain.isPending}
-          onClick={() => switchChain.mutate({ chainId: chain.id })}>Switch to Sepolia</button>
+        <button className="btn ghost wallet-button" disabled={!activeConnector || switchChain.isPending}
+          onClick={() => activeConnector && switchChain.mutate({
+            chainId: chain.id,
+            connector: activeConnector,
+            addEthereumChainParameter: rpcUrl ? { rpcUrls: [rpcUrl] } : undefined,
+          }, { onSettled: () => { void network.refetch(); } })}>
+          {switchChain.isPending ? "Switching network…" : "Switch to Sepolia"}
+        </button>
       ) : (
         <button className="btn ghost wallet-button" disabled={!connector || connect.isPending}
           onClick={() => connector && connect.mutate({ connector })}>
